@@ -1,0 +1,30 @@
+version: '3.5'
+
+networks:
+  net:
+    name: test_network
+
+services:
+  redis:
+    image: redis:5-alpine
+    networks:
+      - net
+    ports:
+      - 6379:6379
+  redis-mailing:
+    networks:
+      - net
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: redis-mailing:latest
+    # Port forwarding is used for running tests locally
+    ports:
+      - 8080:8080
+    depends_on:
+      - redis
+    environment:
+      REDIS_ADDR: "redis:6379"
+      REDIS_CHANNELS: "testChannel"
+    # Keep restarting until redis is up
+    restart: on-failure
